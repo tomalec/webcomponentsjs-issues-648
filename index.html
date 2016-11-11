@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+  <base href="https://polygit.org/components/">
+  <script src="webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="polymer/polymer.html">
+
+
+
+    <script>
+    (function() {
+        // Creates an object based in the HTML Element prototype
+        var JuicyCompositionPrototype = Object.create(HTMLElement.prototype);
+
+        JuicyCompositionPrototype.createdCallback = function() {
+            var shadowHost = this;
+
+
+            shadowHost.observer = new MutationObserver(function (mutations) {
+                debugger
+                // do nothing if it's not yet attached
+                if(!shadowHost.isStamped){
+                  return;
+                }
+                shadowHost.observer.disconnect();
+                // update
+                // add EMPTY document fragment
+                var emptyDocFragment = document.createDocumentFragment();
+                shadowHost.shadowRoot.appendChild(emptyDocFragment);
+
+                // observe again
+                shadowHost.observer.observe(shadowHost, { childList: true });
+
+            });
+            debugger
+            // IDEA: make it cofigurable?
+            shadowHost.observer.observe(shadowHost, { childList: true });
+        };
+
+
+        document.registerElement('juicy-composition', {
+            prototype: JuicyCompositionPrototype
+        });
+    }());
+    </script>
+
+    <template id="partial">
+        <!-- <h1>a</h1> -->
+        <template is="dom-bind">
+            <h2>Works</h2>
+        </template>
+    </template>
+    <template id="compos">
+
+        <div style="background: green;">
+            <content></content>
+        </div>
+
+    </template>
+</head>
+<body>
+    <juicy-composition auto-stamp>
+    </juicy-composition>
+    <script>
+    window.addEventListener('WebComponentsReady', function(e) {
+
+        var part = document.getElementById("partial");
+        var compos = document.getElementById("compos");
+
+        var shadowHost = document.querySelector('juicy-composition');
+
+        setTimeout(function(){
+
+                var givenComposition = document.importNode(compos.content, true);
+                var singleFragment = document.importNode(part.content, true);
+                // stamp Shadow DOM
+                var shadowRoot = shadowHost.createShadowRoot();
+                // shadowRoot = this.attachShadow({mode: "open"});
+
+
+                shadowRoot.appendChild(givenComposition);
+                // FIX?
+                // setTimeout(function(){shadowHost.composition = givenComposition;});
+                // Stamp tempalte into document
+                shadowHost.appendChild(singleFragment);
+                // var nestedTemplate = shadowHost.querySelector('[is="dom-bind"]');
+                // var dynamicLightDOMContent = document.importNode(nestedTemplate.content, true);
+                // shadowHost.insertBefore(dynamicLightDOMContent, nestedTemplate);
+
+
+        }, 100);
+    });
+    </script>
+</body>
+</html>
