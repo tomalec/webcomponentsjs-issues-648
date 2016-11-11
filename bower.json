@@ -14,5 +14,9 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "dependencies": {
+    "webcomponentsjs": "^0.7.23",
+    "polymer": "^1.7.0"
+  }
 }
