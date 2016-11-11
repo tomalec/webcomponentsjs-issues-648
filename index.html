@@ -4,84 +4,43 @@
 <head>
     <base href="https://polygit.org/components/">
     <script src="webcomponentsjs/webcomponents.js"></script>
-
-    <script>
-        (function() {
-            var ShadowHostProto = Object.create(HTMLElement.prototype);
-
-            ShadowHostProto.createdCallback = function() {
-                var shadowHost = this;
-
-                shadowHost.observer = new MutationObserver(function(mutations) {
-                    // do nothing if it's not yet attached
-                    if (!shadowHost.isStamped) {
-                        return;
-                    }
-                    shadowHost.observer.disconnect();
-                    // update
-                    // add EMPTY document fragment
-                    // removing those two lines solves/hides the problem
-                    var emptyDocFragment = document.createDocumentFragment();
-                    shadowHost.shadowRoot.appendChild(emptyDocFragment);
-                    // observe again
-                    shadowHost.observer.observe(shadowHost, {
-                        childList: true
-                    });
-
-                });
-                shadowHost.observer.observe(shadowHost, {
-                    childList: true
-                });
-            };
-
-            document.registerElement('shadow-host', {
-                prototype: ShadowHostProto
-            });
-        }());
-    </script>
-
-    <template id="partial">
-        <!-- Adding an element here solves/hides the problem -->
-        <template></template>
-    </template>
-    <template id="partial2">
-        <h2 slot="heading">I'm green</h2>
-    </template>
-    <template id="compos">
-
-        <div style="background: green;">
-            <content select="[slot='heading']"></content>
-        </div>
-
-    </template>
 </head>
 
 <body>
-    <shadow-host>
-    </shadow-host>
+    <div id="shadow-host">
+    </div>
     <script>
+        var shadowHost = document.querySelector('#shadow-host');
+        shadowHost.observer = new MutationObserver(function(mutations) {
+            shadowHost.observer.disconnect();
+            // update
+            // add EMPTY document fragment
+            // removing those two lines solves/hides the problem
+            var emptyDocFragment = document.createDocumentFragment();
+            shadowHost.shadowRoot.appendChild(emptyDocFragment);
+            // observe again
+            shadowHost.observer.observe(shadowHost, {childList: true});
+
+        });
+        shadowHost.observer.observe(shadowHost, {childList: true});
+
         window.addEventListener('WebComponentsReady', function(e) {
-            var shadowHost = document.querySelector('shadow-host');
 
             // stamp Shadow DOM
-            var shadowDOM = document.importNode(document.getElementById("compos").content, true);
             var shadowRoot = shadowHost.createShadowRoot();
             // shadowRoot = this.attachShadow({mode: "open"});
-            shadowRoot.appendChild(shadowDOM);
-            shadowHost.isStamped = true;
+            shadowRoot.innerHTML = '<div style="background: green;"><content></content></div>';
 
 
             // disabling this event fixes issue
             shadowHost.dispatchEvent(new CustomEvent("stamping"));
 
-            // stamp Light DOM with just a tempalte tag
-            shadowHost.appendChild(document.createElement('template'));
+            // append Light DOM with just a tempalte tag
+            shadowHost.appendChild(document.createTextNode('Am I ...'));
 
             setTimeout(function(){
-                // stamp Light DOM with real elements
-                var domBind =  document.querySelector('#partial2');
-                var content = document.importNode(domBind.content, true);
-                shadowHost.insertBefore(content, shadowHost.firstChild);
+                // append Light DOM with real elements
+                shadowHost.appendChild(document.createTextNode(' green?'));
             });
 
 
