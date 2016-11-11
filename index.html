@@ -1,96 +1,85 @@
 <!doctype html>
 <html>
-<head>
-  <!-- <base href="https://polygit.org/components/">
-  <script src="webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="polymer/polymer.html"> -->
-    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="bower_components/polymer/polymer.html">
 
+<head>
+    <base href="https://polygit.org/components/">
+    <script src="webcomponentsjs/webcomponents.js"></script>
+    <link rel="import" href="polymer/polymer.html">
 
     <script>
-    (function() {
-        // Creates an object based in the HTML Element prototype
-        var JuicyCompositionPrototype = Object.create(HTMLElement.prototype);
+        (function() {
+            var ShadowHostProto = Object.create(HTMLElement.prototype);
 
-        JuicyCompositionPrototype.createdCallback = function() {
-            var shadowHost = this;
+            ShadowHostProto.createdCallback = function() {
+                var shadowHost = this;
 
+                shadowHost.observer = new MutationObserver(function(mutations) {
+                    // do nothing if it's not yet attached
+                    if (!shadowHost.isStamped) {
+                        return;
+                    }
+                    shadowHost.observer.disconnect();
+                    // update
+                    // add EMPTY document fragment
+                    // removing those two lines solves/hides the problem
+                    var emptyDocFragment = document.createDocumentFragment();
+                    shadowHost.shadowRoot.appendChild(emptyDocFragment);
+                    // observe again
+                    shadowHost.observer.observe(shadowHost, {
+                        childList: true
+                    });
 
-            shadowHost.observer = new MutationObserver(function (mutations) {
-                debugger
-                // do nothing if it's not yet attached
-                if(!shadowHost.isStamped){
-                  return;
-                }
-                shadowHost.observer.disconnect();
-                // update
-                // add EMPTY document fragment
-                var emptyDocFragment = document.createDocumentFragment();
-                shadowHost.shadowRoot.appendChild(emptyDocFragment);
+                });
+                shadowHost.observer.observe(shadowHost, {
+                    childList: true
+                });
+            };
 
-                // observe again
-                shadowHost.observer.observe(shadowHost, { childList: true });
-
+            document.registerElement('shadow-host', {
+                prototype: ShadowHostProto
             });
-            debugger
-            // IDEA: make it cofigurable?
-            shadowHost.observer.observe(shadowHost, { childList: true });
-        };
-
-
-        document.registerElement('juicy-composition', {
-            prototype: JuicyCompositionPrototype
-        });
-    }());
+        }());
     </script>
 
     <template id="partial">
-        <!-- <h1>a</h1> -->
+        <!-- Adding an element here solves/hides the problem -->
         <template is="dom-bind">
-            <h2>Works</h2>
+            <h2 slot="heading">I'm green</h2>
         </template>
     </template>
     <template id="compos">
 
         <div style="background: green;">
-            <content></content>
+            <content select="[slot='heading']"></content>
         </div>
 
     </template>
 </head>
+
 <body>
-    <juicy-composition auto-stamp>
-    </juicy-composition>
+    <shadow-host>
+    </shadow-host>
     <script>
-    window.addEventListener('WebComponentsReady', function(e) {
+        window.addEventListener('WebComponentsReady', function(e) {
+            var shadowHost = document.querySelector('shadow-host');
 
-        var part = document.getElementById("partial");
-        var compos = document.getElementById("compos");
-
-        var shadowHost = document.querySelector('juicy-composition');
-
-        setTimeout(function(){
-
-                var givenComposition = document.importNode(compos.content, true);
-                var singleFragment = document.importNode(part.content, true);
-                // stamp Shadow DOM
-                var shadowRoot = shadowHost.createShadowRoot();
-                // shadowRoot = this.attachShadow({mode: "open"});
+            // stamp Shadow DOM
+            var shadowDOM = document.importNode(document.getElementById("compos").content, true);
+            var shadowRoot = shadowHost.createShadowRoot();
+            // shadowRoot = this.attachShadow({mode: "open"});
+            shadowRoot.appendChild(shadowDOM);
+            shadowHost.isStamped = true;
 
 
-                shadowRoot.appendChild(givenComposition);
-                // FIX?
-                // setTimeout(function(){shadowHost.composition = givenComposition;});
-                // Stamp tempalte into document
-                shadowHost.appendChild(singleFragment);
-                // var nestedTemplate = shadowHost.querySelector('[is="dom-bind"]');
-                // var dynamicLightDOMContent = document.importNode(nestedTemplate.content, true);
-                // shadowHost.insertBefore(dynamicLightDOMContent, nestedTemplate);
+            // stamp Light DOM
+            var lightDOM = document.importNode(document.getElementById("partial").content, true);
+            // disabling this event fixes issue
+            shadowHost.dispatchEvent(new CustomEvent("stamped"));
+            shadowHost.appendChild(lightDOM);
 
 
-        }, 100);
-    });
+        });
     </script>
 </body>
+
 </html>
