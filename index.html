@@ -4,7 +4,6 @@
 <head>
     <base href="https://polygit.org/components/">
     <script src="webcomponentsjs/webcomponents.js"></script>
-    <link rel="import" href="polymer/polymer.html">
 
     <script>
         (function() {
@@ -43,9 +42,10 @@
 
     <template id="partial">
         <!-- Adding an element here solves/hides the problem -->
-        <template is="dom-bind">
-            <h2 slot="heading">I'm green</h2>
-        </template>
+        <template></template>
+    </template>
+    <template id="partial2">
+        <h2 slot="heading">I'm green</h2>
     </template>
     <template id="compos">
 
@@ -71,11 +71,18 @@
             shadowHost.isStamped = true;
 
 
-            // stamp Light DOM
-            var lightDOM = document.importNode(document.getElementById("partial").content, true);
             // disabling this event fixes issue
-            shadowHost.dispatchEvent(new CustomEvent("stamped"));
-            shadowHost.appendChild(lightDOM);
+            shadowHost.dispatchEvent(new CustomEvent("stamping"));
+
+            // stamp Light DOM with just a tempalte tag
+            shadowHost.appendChild(document.createElement('template'));
+
+            setTimeout(function(){
+                // stamp Light DOM with real elements
+                var domBind =  document.querySelector('#partial2');
+                var content = document.importNode(domBind.content, true);
+                shadowHost.insertBefore(content, shadowHost.firstChild);
+            });
 
 
         });
