@@ -8,21 +8,10 @@
 
 <body>
     <div id="shadow-host">
+        Am I ...
     </div>
     <script>
         var shadowHost = document.querySelector('#shadow-host');
-        shadowHost.observer = new MutationObserver(function(mutations) {
-            shadowHost.observer.disconnect();
-            // update
-            // add EMPTY document fragment
-            // removing those two lines solves/hides the problem
-            var emptyDocFragment = document.createDocumentFragment();
-            shadowHost.shadowRoot.appendChild(emptyDocFragment);
-            // observe again
-            shadowHost.observer.observe(shadowHost, {childList: true});
-
-        });
-        shadowHost.observer.observe(shadowHost, {childList: true});
 
         window.addEventListener('WebComponentsReady', function(e) {
 
@@ -35,12 +24,16 @@
             // disabling this event fixes issue
             shadowHost.dispatchEvent(new CustomEvent("stamping"));
 
-            // append Light DOM with just a tempalte tag
-            shadowHost.appendChild(document.createTextNode('Am I ...'));
+            // append Light DOM with just an EMPTY document fragment
+            // removing those two lines solves/hides the problem
+            var emptyDocFragment = document.createDocumentFragment();
+            shadowHost.shadowRoot.appendChild(emptyDocFragment);
 
             setTimeout(function(){
                 // append Light DOM with real elements
                 shadowHost.appendChild(document.createTextNode(' green?'));
+                var emptyDocFragment = document.createDocumentFragment();
+                shadowHost.shadowRoot.appendChild(emptyDocFragment);
             });
 
 
