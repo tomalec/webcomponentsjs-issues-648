@@ -8,7 +8,7 @@
 
 <body>
     <div id="shadow-host">
-        Am I ...
+        Am I green?
     </div>
     <script>
         var shadowHost = document.querySelector('#shadow-host');
@@ -25,17 +25,16 @@
             shadowHost.dispatchEvent(new CustomEvent("stamping"));
 
             // append Light DOM with just an EMPTY document fragment
-            // removing those two lines solves/hides the problem
+            // removing those lines solves/hides the problem
             var emptyDocFragment = document.createDocumentFragment();
+            // as well as adding somethin to the document fragment
+            // emptyDocFragment.appendChild(document.createTextNode(''));
             shadowHost.shadowRoot.appendChild(emptyDocFragment);
 
             setTimeout(function(){
-                // append Light DOM with real elements
-                shadowHost.appendChild(document.createTextNode(' green?'));
-                var emptyDocFragment = document.createDocumentFragment();
-                shadowHost.shadowRoot.appendChild(emptyDocFragment);
+                // append something more to the shadow root
+                shadowHost.shadowRoot.appendChild(document.createTextNode('and followed by shadow content?'));
             });
-
 
         });
     </script>
